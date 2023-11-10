@@ -1,0 +1,16 @@
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:id="@+id/textViewAppTitle"
+android:gravity="center"
+android:drawableBottom="@drawable/not_flixbus"
+android:padding="16dp"
+android:background="@color/bgColor"
+android:orientation="horizontal">
+
+<ImageView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:src="@drawable/not_flixbus" />
+</LinearLayout>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activities.AvailableTripsActivity">
+    <include layout="@layout/header_item" />
+
+    <TextView
+        android:layout_margin="20dp"
+        android:id="@+id/textViewTripDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_margin="20dp"
+        android:id="@+id/textViewTotalPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_below="@+id/textViewTripDetails"
+        android:layout_marginTop="16dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/backBtn"
+        android:layout_width="match_parent"
+        android:textSize="25dp"
+        android:text="BACK"
+        android:textColor="@color/white"
+        android:background="@color/bgColor"
+        android:layout_height="wrap_content"></androidx.appcompat.widget.AppCompatButton>
+</LinearLayout>
