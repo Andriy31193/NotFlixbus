@@ -13,6 +13,7 @@ import java.util.Objects;
 
 import edu.itstep.myapplic05.R;
 
+
 public class AvailableTripsActivity extends AppCompatActivity {
 
     @Override
