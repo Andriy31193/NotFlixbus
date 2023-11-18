@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +30,14 @@ import edu.itstep.myapplic05.utils.Utils;
 
 public class BookTicketActivity extends AppCompatActivity {
 
+    private static final String PREFS_NAME = "settings";
+    private static final String KEY_NUM_OF_PEOPLE = "numOfPeople";
+    private static final String KEY_SOURCE = "source";
+    private static final String KEY_DESTINATION = "destination";
+    private static final String KEY_DATE = "date";
+    private static final String KEY_TIME = "time";
+
+
     private List<String> destinationLocations;
     private AutoCompleteTextView autoCompleteSource, autoCompleteDestination;
     private EditText editTextDate;
@@ -46,6 +56,8 @@ public class BookTicketActivity extends AppCompatActivity {
         setupTimeSpinner();
         setDefaultLocations();
 
+        loadPreferences();
+
         setupSearchButton();
         setupTextWatchers();
     }
@@ -56,12 +68,14 @@ public class BookTicketActivity extends AppCompatActivity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
     }
+
     private void setupViews() {
         autoCompleteSource = findViewById(R.id.autoCompleteSource);
         autoCompleteDestination = findViewById(R.id.autoCompleteDestination);
         editTextDate = findViewById(R.id.editTextDate);
         spinnerTime = findViewById(R.id.spinnerTime);
     }
+
     private void setupLocationAdapters() {
         List<String> sourceLocations = populateLocationSpinners();
         destinationLocations = populateLocationSpinners();
@@ -71,10 +85,12 @@ public class BookTicketActivity extends AppCompatActivity {
         autoCompleteSource.setAdapter(sourceAdapter);
         autoCompleteDestination.setAdapter(destinationAdapter);
     }
+
     private void setupSwitchLocationsButton() {
         AppCompatButton switchLocations = findViewById(R.id.btnSwitchLocations);
         switchLocations.setOnClickListener(this::switchLocations);
     }
+
     private void setupTimeSpinner() {
         ArrayAdapter<CharSequence> timeAdapter = ArrayAdapter.createFromResource(
                 this,
@@ -85,14 +101,21 @@ public class BookTicketActivity extends AppCompatActivity {
         timeAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinnerTime.setAdapter(timeAdapter);
     }
+
     private void setDefaultLocations() {
         setDefaultLocation(autoCompleteSource, destinationLocations.get(1));
         setDefaultLocation(autoCompleteDestination, destinationLocations.get(0));
     }
+
     private void setupSearchButton() {
         AppCompatButton btnSearch = findViewById(R.id.btnSearchBus);
-        btnSearch.setOnClickListener(x->showTrips());
+        btnSearch.setOnClickListener(x ->
+        {
+            showTrips();
+            savePreferences();
+        });
     }
+
     private void setupTextWatchers() {
 
         autoCompleteSource.addTextChangedListener(createTextWatcher(autoCompleteDestination));
@@ -102,25 +125,28 @@ public class BookTicketActivity extends AppCompatActivity {
     }
 
 
-
     private TextWatcher createTextWatcher(AutoCompleteTextView me) {
         return new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                updateDestinationLocations(me,editable.toString());
+                updateDestinationLocations(me, editable.toString());
             }
         };
     }
+
     private List<String> populateLocationSpinners() {
         String json = Utils.loadJSONFromAsset(this, "locations.json");
         Gson gson = new Gson();
-        Type locationListType = new TypeToken<List<String>>() {}.getType();
+        Type locationListType = new TypeToken<List<String>>() {
+        }.getType();
         List<String> locationNames = gson.fromJson(json, locationListType);
         return locationNames != null ? locationNames : new ArrayList<>();
     }
@@ -136,13 +162,16 @@ public class BookTicketActivity extends AppCompatActivity {
             destinationAdapter.notifyDataSetChanged();
         }
     }
+
     private void setDefaultLocation(AutoCompleteTextView autoCompleteTextView, String defaultLocation) {
         autoCompleteTextView.setText(defaultLocation);
     }
+
     private void notifyAutoComplete() {
         updateDestinationLocations(autoCompleteDestination, autoCompleteSource.getText().toString());
         updateDestinationLocations(autoCompleteSource, autoCompleteDestination.getText().toString());
     }
+
     public void switchLocations(View view) {
 
         String fromText = autoCompleteSource.getText().toString();
@@ -179,15 +208,48 @@ public class BookTicketActivity extends AppCompatActivity {
         numOfPeople++;
         updateNumOfPeopleTextView();
     }
+
     public void decrementNumOfPeople(View view) {
         if (numOfPeople > 1) {
             numOfPeople--;
             updateNumOfPeopleTextView();
         }
     }
+
     private void updateNumOfPeopleTextView() {
 
         TextView textNumOfPeople = findViewById(R.id.textNumOfPeople);
         textNumOfPeople.setText(String.valueOf(numOfPeople));
+    }
+
+
+    private void savePreferences() {
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
+        editor.putString(KEY_SOURCE, autoCompleteSource.getText().toString());
+        editor.putString(KEY_DESTINATION, autoCompleteDestination.getText().toString());
+        editor.putString(KEY_DATE, editTextDate.getText().toString());
+        editor.putString(KEY_TIME, spinnerTime.getSelectedItem().toString());
+        editor.putInt(KEY_NUM_OF_PEOPLE, numOfPeople);
+        editor.apply();
+    }
+
+    private void loadPreferences() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+        if (!prefs.getString(KEY_SOURCE, "").isEmpty())
+            autoCompleteSource.setText(prefs.getString(KEY_SOURCE, ""));
+        if (!prefs.getString(KEY_DESTINATION, "").isEmpty())
+            autoCompleteDestination.setText(prefs.getString(KEY_DESTINATION, ""));
+        if (!prefs.getString(KEY_DATE, "").isEmpty())
+            editTextDate.setText(prefs.getString(KEY_DATE, ""));
+
+        String savedTime = prefs.getString(KEY_TIME, "");
+
+        if (!savedTime.isEmpty()) {
+            int position = ((ArrayAdapter<String>) spinnerTime.getAdapter()).getPosition(savedTime);
+            spinnerTime.setSelection(position);
+        }
+        numOfPeople = prefs.getInt(KEY_NUM_OF_PEOPLE, 1);
+        updateNumOfPeopleTextView();
     }
 }
